@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareTaker - Admin Dashboard</title>
+  <link rel="stylesheet" href="common/global.css">
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <!-- Client-side Excel processor -->
+  <script src="assets/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast" class="alert-toast">
+    <i id="toast-icon" class="fa-solid"></i>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <!-- Dashboard Container -->
+  <div id="dashboard-section" class="dashboard-container">
+    
+    <!-- Top Header -->
+    <header class="app-header glass-panel">
+      <div class="logo">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span>CareTaker <span class="role-tag admin">Admin Dashboard</span></span>
+        <span id="db-status" class="db-status-badge disconnected"><i class="fa-solid fa-circle"></i> MongoDB Disconnected</span>
+      </div>
+      <div class="user-nav">
+        <div class="user-profile">
+          <i class="fa-solid fa-user-shield" style="font-size: 1.5rem; color: #2563eb;"></i>
+          <span id="display-user-name">Loading...</span>
+        </div>
+        <button id="logout-btn" class="btn btn-secondary btn-icon" title="Log Out">
+          <i class="fa-solid fa-power-off"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Offline Mode Banner -->
+    <div id="offline-banner" class="glass-panel" style="display: none; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); padding: 1rem 1.5rem; margin-bottom: 1.5rem; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; color: #ef4444;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem;"></i>
+        <span style="font-weight: 500; font-size: 0.95rem;">
+          <strong>Offline Mode Active:</strong> MongoDB is disconnected. You can upload an offline Excel spreadsheet to load the present data into your browser.
+        </span>
+      </div>
+      <div>
+        <button id="offline-upload-btn" class="btn btn-danger" style="font-size: 0.85rem; padding: 0.4rem 1rem; cursor: none;">
+          <i class="fa-solid fa-file-import"></i> Upload Offline Excel
+        </button>
+        <input type="file" id="offline-file-input" accept=".xlsx, .xls" style="display: none;">
+      </div>
+    </div>
+
+    <!-- Dashboard Stats Header & Timeframe Filter -->
+    <div class="stats-header-bar glass-panel" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; gap: 1rem; flex-wrap: wrap;">
+      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Medical Dashboard Overview
+      </h3>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <label for="stats-timeframe" style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem;">
+          <i class="fa-solid fa-calendar-days" style="color: var(--secondary);"></i> Time Period:
+        </label>
+        <select id="stats-timeframe" class="input-ctrl" style="width: auto; padding: 0.35rem 2.5rem 0.35rem 1.0rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.3); background-color: rgba(255, 255, 255, 0.9); cursor: none;">
+          <option value="all" selected>All Time</option>
+          <option value="today">Today</option>
+          <option value="2days">Last 2 Days</option>
+          <option value="week">Last Week (7 Days)</option>
+          <option value="month">Last Month (30 Days)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Header Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card glass-panel">
+        <div class="stat-info">
+          <h3>Total Patients</h3>
+          <p id="stat-total-patients">0</p>
+        </div>
+        <div class="stat-icon primary">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-info">
+          <h3>Tablets Distributed</h3>
+          <p id="stat-total-qty">0</p>
+        </div>
+        <div class="stat-icon success">
+          <i class="fa-solid fa-pills"></i>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-info">
+          <h3>Registered Staff</h3>
+          <p id="stat-total-operators">0</p>
+        </div>
+        <div class="stat-icon secondary">
+          <i class="fa-solid fa-id-card"></i>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-info">
+          <h3>Today's Tablets Given</h3>
+          <p id="stat-today-qty">0</p>
+        </div>
+        <div class="stat-icon warning">
+          <i class="fa-solid fa-calendar-day"></i>
+        </div>
+      </div>
+      <div class="stat-card glass-panel">
+        <div class="stat-info">
+          <h3>Total Tablets Given</h3>
+          <p id="stat-total-tablets">0</p>
+        </div>
+        <div class="stat-icon success">
+          <i class="fa-solid fa-prescription-bottle-medical"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="tabs-container">
+      <button class="tab-btn active" onclick="switchTab('master-logs')"><i class="fa-solid fa-database"></i> Master Logs</button>
+      <button class="tab-btn" onclick="switchTab('add-employee')"><i class="fa-solid fa-user-plus"></i> Add Employee</button>
+      <button class="tab-btn" onclick="switchTab('prescribe-tablets')"><i class="fa-solid fa-prescription-bottle-medical"></i> Prescribe Tablets</button>
+      <button class="tab-btn" onclick="switchTab('emp-history')"><i class="fa-solid fa-clock-rotate-left"></i> Employee History</button>
+      <button class="tab-btn" onclick="switchTab('admin-mgr')"><i class="fa-solid fa-users-gear"></i> Staff Management</button>
+    </div>
+
+    <!-- ==================== TAB 1: MASTER LOGS ==================== -->
+    <section id="tab-master-logs" class="tab-content glass-panel">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i> Master Medical Database</h3>
+      </div>
+      <div class="card-body">
+        
+        <!-- Search and Action Buttons -->
+        <div class="table-controls">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass icon"></i>
+            <input type="text" id="search-input" class="input-ctrl" placeholder="Search patient ID, name, department, health problem...">
+          </div>
+          
+          <div class="action-buttons">
+            <button id="download-btn" class="btn btn-primary">
+              <i class="fa-solid fa-cloud-arrow-down"></i> Export Excel
+            </button>
+            <button id="trigger-upload-btn" class="btn btn-secondary">
+              <i class="fa-solid fa-file-import"></i> Import Excel
+            </button>
+            <input type="file" id="admin-file-input" accept=".xlsx, .xls" style="display: none;">
+          </div>
+        </div>
+
+        <!-- Master Table -->
+        <div class="table-wrapper">
+          <table class="data-table" id="master-records-table">
+            <thead>
+              <tr>
+                <th>Emp ID</th>
+                <th>Patient Name</th>
+                <th>Department</th>
+                <th>Working Area</th>
+                <th>Health Problem</th>
+                <th>Tablets Given</th>
+                <th>Qty</th>
+                <th>Entered By</th>
+                <th>Date Added</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="master-records-body">
+              <!-- Dynamic rows -->
+            </tbody>
+          </table>
+          
+          <div id="master-empty-state" class="empty-state" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass-chart icon"></i>
+            <p>No health records matching your query were found in database.</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <div id="pagination-info">Showing page 1 of 1</div>
+          <div class="pagination-buttons">
+            <button id="prev-page-btn" class="pagination-btn" disabled><i class="fa-solid fa-chevron-left"></i> Prev</button>
+            <button id="next-page-btn" class="pagination-btn" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: ADD EMPLOYEE ==================== -->
+    <section id="tab-add-employee" class="tab-content glass-panel" style="display: none; max-width: 650px; margin: 0 auto;">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-id-card-clip" style="color: var(--secondary);"></i> Register Employee Details</h3>
+      </div>
+      <div class="card-body">
+        <form id="admin-employee-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem;">
+          <div class="form-group">
+            <label for="emp-id">Employee ID</label>
+            <input type="text" id="emp-id" class="input-ctrl" placeholder="e.g. EMP400" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="emp-name">Employee Name</label>
+            <input type="text" id="emp-name" class="input-ctrl" placeholder="e.g. Robert Drake" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="emp-dept">Department</label>
+            <input type="text" id="emp-dept" class="input-ctrl" placeholder="e.g. Engineering, Sales" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="emp-area">Working Area</label>
+            <input type="text" id="emp-area" class="input-ctrl" placeholder="e.g. Building B, Room 5" required>
+          </div>
+          
+          <button type="submit" class="btn btn-secondary" style="grid-column: span 2; margin-top: 1rem; border-color: var(--secondary); background: rgba(37,99,235,0.05); color: var(--secondary);">
+            <i class="fa-solid fa-user-plus"></i> Save Employee Personal Details
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: PRESCRIBE TABLETS ==================== -->
+    <section id="tab-prescribe-tablets" class="tab-content glass-panel" style="display: none; max-width: 1000px; margin: 0 auto;">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-prescription-bottle-medical" style="color: var(--accent);"></i> Prescribe Tablets</h3>
+      </div>
+      <div class="card-body" style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        
+        <!-- Left Side: Prescription Input Form -->
+        <form id="admin-prescribe-form" style="flex: 1.3; min-width: 300px; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; height: fit-content;">
+          <div class="form-group">
+            <label for="pres-empid">Employee ID</label>
+            <input type="text" id="pres-empid" class="input-ctrl" placeholder="Enter ID to fetch name..." required>
+          </div>
+          
+          <div class="form-group">
+            <label for="pres-name">Patient Name (Auto-filled)</label>
+            <input type="text" id="pres-name" class="input-ctrl" placeholder="Employee Name" readonly style="background: rgba(255,255,255,0.4);">
+          </div>
+
+          <div class="form-group">
+            <label for="pres-area">Working Area</label>
+            <input type="text" id="pres-area" class="input-ctrl" placeholder="e.g. Building B, Room 5" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pres-set">Working Set</label>
+            <select id="pres-set" class="input-ctrl" required style="cursor: none;">
+              <option value="" disabled selected>Select Set</option>
+              <option value="Set 1">Set 1</option>
+              <option value="Set 2">Set 2</option>
+              <option value="Set 3">Set 3</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="pres-problem">Health Problem</label>
+            <input type="text" id="pres-problem" class="input-ctrl" placeholder="e.g. Headache, Cough" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="pres-tablets">Tablets Given</label>
+            <input type="text" id="pres-tablets" class="input-ctrl" placeholder="e.g. Ibuprofen 400mg" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="pres-qty">Quantity</label>
+            <input type="number" id="pres-qty" class="input-ctrl" min="1" placeholder="e.g. 10" required>
+          </div>
+          
+          <button type="submit" class="btn btn-success" style="grid-column: span 2; margin-top: 1rem;">
+            <i class="fa-solid fa-pills"></i> Distribute & Save Record
+          </button>
+        </form>
+
+        <!-- Right Side: Patient History Insights Panel -->
+        <div id="patient-history-insights" class="glass-panel" style="flex: 1; min-width: 280px; display: none; padding: 1.5rem; background: rgba(2, 132, 199, 0.03); border: 1px solid rgba(2, 132, 199, 0.15); flex-direction: column; gap: 1rem; height: fit-content; margin-top: 0;">
+          <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; margin: 0; border-bottom: 1px solid rgba(2, 132, 199, 0.1); padding-bottom: 0.75rem;">
+            <i class="fa-solid fa-chart-line"></i> Patient History Insights
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem;">
+            <div style="background: rgba(255, 255, 255, 0.6); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.1); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Total Tablets Taken</span>
+              <strong id="insight-total-tablets" style="font-size: 1.2rem; color: var(--secondary);">0</strong>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.6); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.1); display: flex; justify-content: space-between; align-items: center; overflow: hidden; gap: 1rem;">
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Most Common Issue</span>
+              <strong id="insight-common-issue" style="font-size: 0.9rem; color: var(--danger); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="N/A">N/A</strong>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.6); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(14, 165, 233, 0.1); display: flex; justify-content: space-between; align-items: center; overflow: hidden; gap: 1rem;">
+              <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Frequent Work Area</span>
+              <strong id="insight-frequent-area" style="font-size: 0.9rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;" title="N/A">N/A</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: EMPLOYEE HISTORY ==================== -->
+    <section id="tab-emp-history" class="tab-content glass-panel" style="display: none;">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-magnifying-glass-chart" style="color: var(--primary);"></i> Employee Medical History Lookup</h3>
+      </div>
+      <div class="card-body">
+        
+        <!-- History Lookup Input -->
+        <div class="form-group" style="flex-direction: row; gap: 1rem; align-items: flex-end; max-width: 500px; margin-bottom: 2rem;">
+          <div style="flex: 1;">
+            <label for="history-search-id">Enter Employee ID</label>
+            <input type="text" id="history-search-id" class="input-ctrl" placeholder="e.g. EMP456" style="margin-top: 0.5rem;">
+          </div>
+          <button id="lookup-history-btn" class="btn btn-primary" style="height: 43px;"><i class="fa-solid fa-search"></i> Search History</button>
+        </div>
+
+        <!-- History Results -->
+        <div id="history-results" style="display: none; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Employee Details Banner -->
+          <div class="glass-panel" style="padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 2rem; background: rgba(2, 132, 199, 0.03);">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Name</span>
+              <h4 id="hist-emp-name" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-top: 0.25rem;">Robert Drake</h4>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Employee ID</span>
+              <h4 id="hist-emp-id" style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 0.25rem;">EMP400</h4>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Department</span>
+              <h4 id="hist-emp-dept" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-top: 0.25rem;">Engineering</h4>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Working Area</span>
+              <h4 id="hist-emp-area" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-top: 0.25rem;">Building B</h4>
+            </div>
+          </div>
+
+          <!-- Medical Log History Grid -->
+          <div class="table-wrapper">
+            <table class="data-table" id="emp-history-table">
+              <thead>
+                <tr>
+                  <th>Health Problem</th>
+                  <th>Tablets Given</th>
+                  <th>Quantity</th>
+                  <th>Prescribed By</th>
+                  <th>Date Given</th>
+                </tr>
+              </thead>
+              <tbody id="emp-history-body">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- History Empty State -->
+        <div id="history-empty" class="empty-state" style="display: flex;">
+          <i class="fa-solid fa-history icon"></i>
+          <p>Please enter an Employee ID above to search and display their medical history.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: STAFF MANAGEMENT ==================== -->
+    <section id="tab-admin-mgr" class="tab-content glass-panel" style="display: none; max-width: 650px;">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-users-gear" style="color: var(--secondary);"></i> Staff Account Management</h3>
+      </div>
+      <div class="card-body" style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Administrators Section -->
+        <div>
+          <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--secondary); margin-bottom: 0.5rem;"><i class="fa-solid fa-user-shield" style="margin-right: 0.5rem;"></i> Administrators</h4>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1rem;">
+            The following accounts have administrative privileges. You cannot remove the account you are currently logged into.
+          </p>
+          <div class="user-list" id="admins-list-container">
+            <!-- Admin items go here -->
+          </div>
+        </div>
+
+        <!-- Operators Section -->
+        <div>
+          <h4 style="font-size: 1.05rem; font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;"><i class="fa-solid fa-user-gear" style="margin-right: 0.5rem;"></i> Medical Operators</h4>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1rem;">
+            The following accounts are medical operators. Deleting an operator account will revoke their system access.
+          </p>
+          <div class="user-list" id="operators-list-container">
+            <!-- Operator items go here -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Edit Record Modal Overlay -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="modal-content glass-panel">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-user-pen" style="color: var(--primary);"></i> Edit Medical Record</h3>
+        <button id="close-modal-btn" class="btn btn-secondary btn-icon" style="padding: 0.25rem 0.5rem;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="card-body">
+        <form id="edit-record-form">
+          <input type="hidden" id="edit-rec-id">
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="edit-rec-empid">Patient Emp ID</label>
+              <input type="text" id="edit-rec-empid" class="input-ctrl" required readonly style="background: rgba(255,255,255,0.4);">
+            </div>
+            <div class="form-group">
+              <label for="edit-rec-name">Patient Name</label>
+              <input type="text" id="edit-rec-name" class="input-ctrl" required readonly style="background: rgba(255,255,255,0.4);">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-rec-problem">Health Problem</label>
+            <input type="text" id="edit-rec-problem" class="input-ctrl" required>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 80px; gap: 1rem;">
+            <div class="form-group">
+              <label for="edit-rec-tablets">Tablets Given</label>
+              <input type="text" id="edit-rec-tablets" class="input-ctrl" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-rec-qty">Qty</label>
+              <input type="number" id="edit-rec-qty" class="input-ctrl" min="1" required>
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+            <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    Designed by Kedara Karthikeya
+  </footer>
+
+  <!-- Custom Mouse Cursor Elements -->
+  <div class="custom-cursor-dot" id="custom-dot"></div>
+  <div class="custom-cursor-outline" id="custom-outline"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

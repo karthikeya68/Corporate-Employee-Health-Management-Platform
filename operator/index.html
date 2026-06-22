@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareTaker - Operator Portal</title>
+  <link rel="stylesheet" href="../common/global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Client-side Excel processor -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast" class="alert-toast">
+    <i id="toast-icon" class="fa-solid"></i>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <!-- Auth Panel (Login & Registration) -->
+  <div id="auth-section" class="auth-wrapper">
+    <div class="auth-card glass-panel">
+      <div class="logo" style="justify-content: center; margin-bottom: 1rem;">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span>CareTaker</span>
+      </div>
+      <h2 id="auth-title">Operator Login</h2>
+      <p id="auth-desc">Please log in to access the medical entry terminal.</p>
+      
+      <form id="auth-form">
+        <!-- Name field (only visible for registration) -->
+        <div class="form-group" id="name-group" style="display: none;">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" class="input-ctrl" placeholder="John Doe">
+        </div>
+        
+        <div class="form-group">
+          <label for="login-empid">Employee ID</label>
+          <input type="text" id="login-empid" class="input-ctrl" placeholder="EMP123" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="login-pwd">Password</label>
+          <input type="password" id="login-pwd" class="input-ctrl" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" id="auth-btn" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+          <i class="fa-solid fa-right-to-bracket"></i> Login
+        </button>
+      </form>
+      
+      <div class="auth-toggle">
+        <span id="toggle-auth-link">Need to register as a new Operator?</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Panel (Visible post authentication) -->
+  <div id="dashboard-section" class="dashboard-container" style="display: none;">
+    
+    <!-- Top Header -->
+    <header class="app-header glass-panel">
+      <div class="logo">
+        <i class="fa-solid fa-heart-pulse"></i>
+        <span>CareTaker <span class="role-tag operator">Operator</span></span>
+      </div>
+      <div class="user-nav">
+        <div class="user-profile">
+          <i class="fa-solid fa-user-circle" style="font-size: 1.5rem; color: #a5b4fc;"></i>
+          <span id="display-user-name">Loading...</span>
+        </div>
+        <button id="logout-btn" class="btn btn-secondary btn-icon" title="Log Out">
+          <i class="fa-solid fa-power-off"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid Dashboard layout: Left (Entry Form) | Right (Excel Import & Table) -->
+    <div class="dashboard-grid two-cols">
+      
+      <!-- Left Column: Manual Record Form -->
+      <section class="glass-panel">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-user-plus" style="color: var(--primary);"></i> Manual Patient Entry</h3>
+        </div>
+        <div class="card-body">
+          <form id="record-form">
+            <div class="form-group">
+              <label for="rec-empid">Patient Emp ID</label>
+              <input type="text" id="rec-empid" class="input-ctrl" placeholder="e.g. EMP456" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rec-name">Patient Name</label>
+              <input type="text" id="rec-name" class="input-ctrl" placeholder="e.g. Alice Smith" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rec-dept">Department</label>
+              <input type="text" id="rec-dept" class="input-ctrl" placeholder="e.g. Operations, IT, QA" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rec-area">Working Area</label>
+              <input type="text" id="rec-area" class="input-ctrl" placeholder="e.g. Floor 2, Block A" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rec-disease">Health Disease</label>
+              <input type="text" id="rec-disease" class="input-ctrl" placeholder="e.g. Fever, Hypertension" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rec-tablets">Tablets Given</label>
+              <input type="text" id="rec-tablets" class="input-ctrl" placeholder="e.g. Paracetamol 500mg" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="rec-qty">Quantity</label>
+              <input type="number" id="rec-qty" class="input-ctrl" min="1" placeholder="e.g. 5" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+              <i class="fa-solid fa-file-invoice-medical"></i> Save Patient Record
+            </button>
+          </form>
+        </div>
+      </section>
+      
+      <!-- Right Column: Excel Import and Recent Logs -->
+      <div style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Excel Upload Card -->
+        <section class="glass-panel">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-file-excel" style="color: var(--accent);"></i> Excel Import (Bulk)</h3>
+          </div>
+          <div class="card-body">
+            <div class="file-upload-zone" id="drop-zone">
+              <i class="fa-solid fa-cloud-arrow-up icon"></i>
+              <p>Drag and drop your Excel file here, or <strong>browse files</strong></p>
+              <span>Supports .xlsx and .xls formats</span>
+              <input type="file" id="file-input" accept=".xlsx, .xls">
+            </div>
+            <div id="file-info" style="display: none; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--panel-border);">
+              <span id="file-name" style="font-size: 0.9rem; font-weight: 500;"><i class="fa-regular fa-file-excel" style="color: var(--accent); margin-right: 0.5rem;"></i>filename.xlsx</span>
+              <button id="upload-btn" class="btn btn-success btn-icon" style="padding: 0.4rem 1rem; font-size: 0.85rem;">
+                <i class="fa-solid fa-check"></i> Upload
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Operator Logs List Card -->
+        <section class="glass-panel" style="flex: 1;">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--secondary);"></i> My Recent Entries</h3>
+          </div>
+          <div class="card-body" style="padding: 1.25rem;">
+            <div class="table-wrapper">
+              <table class="data-table" id="operator-records-table">
+                <thead>
+                  <tr>
+                    <th>Emp ID</th>
+                    <th>Name</th>
+                    <th>Dept</th>
+                    <th>Area</th>
+                    <th>Disease</th>
+                    <th>Tablets</th>
+                    <th>Qty</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="records-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+              <div id="empty-records" class="empty-state">
+                <i class="fa-solid fa-folder-open icon"></i>
+                <p>No records found. Start by entering a patient manually or uploading an Excel sheet.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Mouse Cursor Elements -->
+  <div class="custom-cursor-dot" id="custom-dot"></div>
+  <div class="custom-cursor-outline" id="custom-outline"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OHC Management - Operator Registration</title>
+  <link rel="stylesheet" href="common/global.css">
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast" class="alert-toast">
+    <i id="toast-icon" class="fa-solid"></i>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <!-- Main Registration Card -->
+  <div class="auth-wrapper">
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%; max-width: 480px;">
+      
+      <div class="auth-card glass-panel">
+        <div class="logo" style="justify-content: center; margin-bottom: 0.5rem;">
+          <i class="fa-solid fa-heart-pulse" style="color: var(--secondary);"></i>
+          <span>OHC Management</span>
+        </div>
+        <h2 style="text-align: center; margin-bottom: 0.25rem;">Operator Registration</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.5rem;">Create a new Medical Operator account to manage health records.</p>
+        
+        <form id="register-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1rem;">
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" class="input-ctrl" placeholder="e.g. Ravi Kumar" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="reg-empid">Employee ID</label>
+            <input type="text" id="reg-empid" class="input-ctrl" placeholder="e.g. EMP001" required>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-mobile">Mobile Number</label>
+            <input type="tel" id="reg-mobile" class="input-ctrl" placeholder="e.g. 9876543210" required>
+          </div>
+
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" class="input-ctrl" placeholder="e.g. ravi.kumar@company.com" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="reg-pwd">Password</label>
+            <input type="password" id="reg-pwd" class="input-ctrl" placeholder="••••••••" required>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-confpwd">Confirm Password</label>
+            <input type="password" id="reg-confpwd" class="input-ctrl" placeholder="••••••••" required>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" style="grid-column: span 2; margin-top: 1rem; width: 100%;">
+            <i class="fa-solid fa-user-plus"></i> Register Operator Account
+          </button>
+        </form>
+      </div>
+
+      <!-- Login Portal Info Card -->
+      <div class="glass-panel" style="padding: 1.5rem; text-align: center; border-color: rgba(2, 132, 199, 0.25);">
+        <h4 style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--primary);">
+          <i class="fa-solid fa-right-to-bracket"></i> Already registered?
+        </h4>
+        <p style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.4;">
+          Go to the Operator Login Terminal on Port 9012 to access the system:
+        </p>
+        <a id="login-link" href="http://localhost:9012" class="btn btn-secondary" style="width: 100%; margin-top: 0.85rem; padding: 0.5rem 1rem; font-size: 0.825rem; font-weight: 600;">
+          <i class="fa-solid fa-right-to-bracket"></i> Go to Login Terminal (Port 9012)
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    OHC Management System &copy; 2026. All rights reserved.
+  </footer>
+
+  <!-- Custom Mouse Cursor Elements -->
+  <div class="custom-cursor-dot" id="custom-dot"></div>
+  <div class="custom-cursor-outline" id="custom-outline"></div>
+
+  <script src="register.js"></script>
+</body>
+</html>

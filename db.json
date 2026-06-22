@@ -1,0 +1,145 @@
+{
+  "users": [
+    {
+      "empId": "ADM100",
+      "name": "System Administrator",
+      "password": "adminpassword",
+      "role": "admin",
+      "_id": "6a2f9003f02e3bbd1d513bbd"
+    }
+  ],
+  "employees": [
+    {
+      "empId": "EMP01",
+      "name": "John Doe",
+      "department": "Engineering",
+      "workingArea": "Area A",
+      "_id": "6a2f90e3c8262d0ef3460dd9"
+    },
+    {
+      "empId": "EMP02",
+      "name": "Jane Smith",
+      "department": "Sales",
+      "workingArea": "Area B",
+      "_id": "6a2f90e3c8262d0ef3460dda"
+    },
+    {
+      "empId": "EMP03",
+      "name": "Bob Johnson",
+      "department": "Marketing",
+      "workingArea": "Area C",
+      "_id": "6a2f90e3c8262d0ef3460ddb"
+    },
+    {
+      "empId": "EMP04",
+      "name": "Alice Williams",
+      "department": "Safety",
+      "workingArea": "Gate 1",
+      "_id": "6a2f90e3c8262d0ef3460ddc"
+    },
+    {
+      "empId": "EMP05",
+      "name": "Charlie Brown",
+      "department": "Production",
+      "workingArea": "Line 1",
+      "_id": "6a2f90e3c8262d0ef3460ddd"
+    },
+    {
+      "empId": "EMP06",
+      "name": "David Miller",
+      "department": "Quality",
+      "workingArea": "Lab A",
+      "_id": "6a2f90e3c8262d0ef3460dde"
+    },
+    {
+      "empId": "EMP07",
+      "name": "Emily Davis",
+      "department": "Operations",
+      "workingArea": "Warehouse",
+      "_id": "6a2f90e3c8262d0ef3460ddf"
+    },
+    {
+      "empId": "EMP08",
+      "name": "Frank Wilson",
+      "department": "HR",
+      "workingArea": "Office 101",
+      "_id": "6a2f90e3c8262d0ef3460de0"
+    },
+    {
+      "empId": "EMP09",
+      "name": "Grace Taylor",
+      "department": "Logistics",
+      "workingArea": "Dock 2",
+      "_id": "6a2f90e3c8262d0ef3460de1"
+    },
+    {
+      "empId": "EMP10",
+      "name": "Henry Anderson",
+      "department": "Maintenance",
+      "workingArea": "Yard",
+      "_id": "6a2f90e3c8262d0ef3460de2"
+    }
+  ],
+  "records": [
+    {
+      "_id": "rec_today_1",
+      "empId": "EMP01",
+      "problem": "Headache",
+      "tabletsGiven": "Paracetamol 500mg",
+      "quantity": 2,
+      "workingArea": "Area A",
+      "workingSet": "Set 1",
+      "enteredBy": "ADM100",
+      "source": "manual",
+      "createdAt": "2026-06-15T05:52:33.695Z"
+    },
+    {
+      "_id": "rec_yesterday_1",
+      "empId": "EMP01",
+      "problem": "Stomach Ache",
+      "tabletsGiven": "Digene",
+      "quantity": 4,
+      "workingArea": "Area A",
+      "workingSet": "Set 2",
+      "enteredBy": "ADM100",
+      "source": "manual",
+      "createdAt": "2026-06-14T05:52:33.695Z"
+    },
+    {
+      "_id": "rec_4days_1",
+      "empId": "EMP02",
+      "problem": "Cough",
+      "tabletsGiven": "Cough Syrup",
+      "quantity": 1,
+      "workingArea": "Area B",
+      "workingSet": "Set 1",
+      "enteredBy": "ADM100",
+      "source": "manual",
+      "createdAt": "2026-06-11T05:52:33.695Z"
+    },
+    {
+      "_id": "rec_10days_1",
+      "empId": "EMP03",
+      "problem": "Fever",
+      "tabletsGiven": "Ibuprofen",
+      "quantity": 5,
+      "workingArea": "Area C",
+      "workingSet": "Set 3",
+      "enteredBy": "ADM100",
+      "source": "manual",
+      "createdAt": "2026-06-05T05:52:33.695Z"
+    },
+    {
+      "_id": "rec_45days_1",
+      "empId": "EMP04",
+      "problem": "Back Pain",
+      "tabletsGiven": "Pain Relief Spray",
+      "quantity": 3,
+      "workingArea": "Gate 1",
+      "workingSet": "Set 2",
+      "enteredBy": "ADM100",
+      "source": "manual",
+      "createdAt": "2026-05-01T05:52:33.695Z"
+    }
+  ]
+}
