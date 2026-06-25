@@ -502,6 +502,8 @@ function setupFormHandlers() {
     const issue = document.getElementById('pat-issue').value.trim();
     const tabletsGiven = document.getElementById('pat-tablets').value.trim();
     const quantity = Number(document.getElementById('pat-qty').value || 0);
+    const temperature = document.getElementById('pat-temp') ? document.getElementById('pat-temp').value.trim() : '';
+    const firstAid = document.getElementById('pat-firstaid') ? document.getElementById('pat-firstaid').value.trim() : '';
     const attendedBy = document.getElementById('pat-attended-by').value.trim();
     const remark = document.getElementById('pat-remark').value.trim();
     
@@ -523,6 +525,7 @@ function setupFormHandlers() {
       bp: bpVal || 'N/A',
       sugar: sugarVal,
       issue, tabletsGiven, quantity,
+      temperature, firstAid,
       attendedBy, remark,
       visitDateTime: new Date().toISOString()
     };
@@ -895,18 +898,30 @@ async function showEmployeeProfile(empNum) {
     if (suggBody) {
       suggBody.innerHTML = '';
       if (data.suggestions && data.suggestions.length > 0) {
+        let totalAmount = 0;
         data.suggestions.forEach(sugg => {
           const dateStr = new Date(sugg.suggestedAt).toLocaleDateString();
           const tr = document.createElement('tr');
+          const amount = sugg.amount || 0;
+          totalAmount += amount;
+          const statusBadge = sugg.status === 'Closed' ? '<span class="role-tag admin" style="background:#e0ffe0; color:#008000;">Closed</span>' : '<span class="role-tag admin" style="background:#fff3e0; color:#e65100;">Open</span>';
+          const arogyasriText = sugg.arogyasri ? '<i class="fa-solid fa-check" style="color: green;"></i> Yes' : '-';
+          
           tr.innerHTML = `
             <td>${dateStr}</td>
             <td><strong>${sugg.hospitalName}</strong></td>
             <td>${sugg.reason}</td>
+            <td>${arogyasriText}</td>
+            <td>${amount}</td>
+            <td>${statusBadge}</td>
           `;
           suggBody.appendChild(tr);
         });
+        
+        const totalSpan = document.getElementById('profile-total-amount');
+        if (totalSpan) totalSpan.textContent = totalAmount;
       } else {
-        suggBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">No hospital suggestions found.</td></tr>';
+        suggBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">No hospital suggestions found.</td></tr>';
       }
     }
 
@@ -1777,7 +1792,7 @@ let currentIssueHistoryData = [];
 
 async function loadIssueHistory() {
   const tbody = document.getElementById('issue-history-body');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading data...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading data...</td></tr>';
   
   const fromDate = document.getElementById('ih-from-date') ? document.getElementById('ih-from-date').value : '';
   const toDate = document.getElementById('ih-to-date') ? document.getElementById('ih-to-date').value : '';
@@ -1793,7 +1808,7 @@ async function loadIssueHistory() {
     tbody.innerHTML = '';
     
     if (issues.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-muted);">No issue records found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--text-muted);">No issue records found.</td></tr>';
       return;
     }
     
@@ -1815,14 +1830,74 @@ async function loadIssueHistory() {
         <td>${empDesig}</td>
         <td>${empLoc}</td>
         <td><span class="role-tag admin">${issue.issue}</span></td>
-        <td>${issue.tabletsGiven}</td>
-        <td><span style="font-weight:600;">${issue.quantity}</span></td>
+        <td>${issue.tabletsGiven || '-'}</td>
+        <td><span style="font-weight:600;">${issue.quantity || '-'}</span></td>
+        <td>${issue.temperature || '-'}</td>
+        <td>${issue.firstAid || '-'}</td>
       `;
       tbody.appendChild(tr);
     });
+
+    // Populate select dropdown filters dynamically
+    const designations = new Set();
+    const locations = new Set();
+    const uniqueIssues = new Set();
+
+    issues.forEach(issue => {
+      const emp = issue.employeeId;
+      if (emp && emp.designation) designations.add(emp.designation);
+      if (emp && emp.workLocation) locations.add(emp.workLocation);
+      if (issue.issue) uniqueIssues.add(issue.issue);
+    });
+
+    const desigSelect = document.getElementById('ih-filter-designation');
+    const locSelect = document.getElementById('ih-filter-location');
+    const issueSelect = document.getElementById('ih-filter-issue');
+
+    if (desigSelect) desigSelect.innerHTML = '<option value="">All</option>' + Array.from(designations).sort().map(d => `<option value="${d}">${d}</option>`).join('');
+    if (locSelect) locSelect.innerHTML = '<option value="">All</option>' + Array.from(locations).sort().map(l => `<option value="${l}">${l}</option>`).join('');
+    if (issueSelect) issueSelect.innerHTML = '<option value="">All</option>' + Array.from(uniqueIssues).sort().map(i => `<option value="${i}">${i}</option>`).join('');
+
   } catch (err) {
-    showToast('Error loading issue history: ' + err.message, 'error');
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--danger);">Error loading data.</td></tr>';
+    showToast(err.message, 'error');
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color: var(--danger);">Error loading history</td></tr>';
+  }
+}
+
+// Function to filter the Issue History table dynamically
+function filterIssueHistoryTable(columnIndex) {
+  const table = document.getElementById('issue-history-table');
+  const filterRow = table.getElementsByClassName('filter-row')[0];
+  const inputs = filterRow.querySelectorAll('.input-ctrl');
+  
+  // Get all filter values in an array
+  const filterValues = Array.from(inputs).map(input => input.value.toLowerCase());
+  
+  const tbody = document.getElementById('issue-history-body');
+  const tr = tbody.getElementsByTagName('tr');
+  
+  // Skip filtering if it's the empty state/loading state
+  if (tr.length === 1 && tr[0].getElementsByTagName('td')[0].colSpan > 1) return;
+  
+  for (let i = 0; i < tr.length; i++) {
+    let rowMatches = true;
+    const tds = tr[i].getElementsByTagName('td');
+    
+    for (let j = 0; j < filterValues.length; j++) {
+      if (filterValues[j] && tds[j]) {
+        const cellText = tds[j].textContent || tds[j].innerText;
+        if (cellText.toLowerCase().indexOf(filterValues[j]) === -1) {
+          rowMatches = false;
+          break;
+        }
+      }
+    }
+    
+    if (rowMatches) {
+      tr[i].style.display = "";
+    } else {
+      tr[i].style.display = "none";
+    }
   }
 }
 
@@ -1846,9 +1921,12 @@ function exportIssueHistoryExcel() {
         'Designation': emp && emp.designation ? emp.designation : '-',
         'Work Location': emp && emp.workLocation ? emp.workLocation : '-',
         'Issue': issue.issue,
-        'Tablets Given': issue.tabletsGiven,
-        'Quantity': issue.quantity,
-        'Issued Date': new Date(issue.issuedDate).toLocaleString()
+        'Tablets Given': issue.tabletsGiven || '',
+        'Quantity': issue.quantity || 0,
+        'Temperature': issue.temperature || '',
+        'First Aid': issue.firstAid || '',
+        'Issued Date': new Date(issue.issuedDate).toLocaleString(),
+        'Entered By': issue.operatorId || 'Unknown'
       };
     });
     
@@ -1904,7 +1982,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const hrEmpInput = document.getElementById('hr-emp-id');
   if (hrEmpInput) {
-    hrEmpInput.addEventListener('blur', (e) => fetchEmpName(e.target.value.trim(), 'hr-emp-name'));
+    hrEmpInput.addEventListener('blur', async (e) => {
+      const empNum = e.target.value.trim();
+      await fetchEmpName(empNum, 'hr-emp-name');
+      
+      if (!empNum) return;
+      try {
+        const res = await fetchWithAuth(`/api/hospital-suggestions/open/${empNum}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.suggestion) {
+            document.getElementById('hr-hospital-name').value = data.suggestion.hospitalName;
+            if (data.suggestion.amount) document.getElementById('hr-amount').value = data.suggestion.amount;
+            document.getElementById('hr-suggestion-id').value = data.suggestion._id;
+            showToast('Warning: Unclosed hospital case found! Resuming previous session data.', 'warning');
+          } else {
+            // clear out if no suggestion
+            document.getElementById('hr-hospital-name').value = "";
+            document.getElementById('hr-amount').value = "";
+            document.getElementById('hr-suggestion-id').value = "";
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching open hospital cases:', err);
+      }
+    });
   }
   const hsEmpInput = document.getElementById('hs-emp-id');
   if (hsEmpInput) {
@@ -1971,6 +2073,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const empId = document.getElementById('hs-emp-id').value.trim().toUpperCase();
       const hospitalName = document.getElementById('hs-hospital-name').value;
       const reason = document.getElementById('hs-reason').value.trim();
+      const arogyasri = document.getElementById('hs-arogyasri') ? document.getElementById('hs-arogyasri').checked : false;
       
       if (!empId || !hospitalName || !reason) return;
 
@@ -1983,7 +2086,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetchWithAuth('/api/hospital-suggestions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ employeeNumber: empId, hospitalName, reason })
+          body: JSON.stringify({ employeeNumber: empId, hospitalName, reason, arogyasri })
         });
         
         if (!res.ok) {
@@ -2009,6 +2112,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const empId = document.getElementById('hr-emp-id').value.trim().toUpperCase();
       const hospitalName = document.getElementById('hr-hospital-name').value.trim();
       const fileInput = document.getElementById('hr-file');
+      const amount = document.getElementById('hr-amount') ? document.getElementById('hr-amount').value : '';
+      const closeCase = document.getElementById('hr-close-case') ? document.getElementById('hr-close-case').checked : false;
+      const suggestionId = document.getElementById('hr-suggestion-id') ? document.getElementById('hr-suggestion-id').value : '';
+      
       if (!empId || !hospitalName || !fileInput.files.length) return;
 
       const btn = document.getElementById('hr-submit-btn');
@@ -2020,6 +2127,9 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('employeeNumber', empId);
       formData.append('reportType', 'Hospital');
       formData.append('hospitalName', hospitalName);
+      if (amount) formData.append('amount', amount);
+      formData.append('closeCase', closeCase);
+      if (suggestionId) formData.append('suggestionId', suggestionId);
       formData.append('file', fileInput.files[0]);
 
       try {

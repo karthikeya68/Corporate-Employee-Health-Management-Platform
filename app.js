@@ -277,6 +277,7 @@ app.post('/api/employees', authMiddleware, async (req, res) => {
     const {
       name, employeeNumber, designation, workLocation,
       age, height, weight, pulse, bp, sugar, issue, tabletsGiven, quantity,
+      temperature, firstAid,
       remark, attendedBy,
       addReport, reportDate, ...reportData
     } = req.body;
@@ -288,7 +289,7 @@ app.post('/api/employees', authMiddleware, async (req, res) => {
     let isNew = false;
 
     if (!employee) {
-      employee = new Employee({ name, employeeNumber, designation, workLocation, age, height, weight, pulse, bp, sugar, issue, tabletsGiven, quantity });
+      employee = new Employee({ name, employeeNumber, designation, workLocation, age, height, weight, pulse, bp, sugar, issue, tabletsGiven, quantity, operatorId: req.operator.operatorId });
       isNew = true;
     } else {
       employee.name = name;
@@ -300,14 +301,16 @@ app.post('/api/employees', authMiddleware, async (req, res) => {
       employee.pulse = pulse || employee.pulse;
       employee.bp = bp || employee.bp;
       employee.sugar = sugar || employee.sugar;
-      employee.issue = issue;
-      employee.tabletsGiven = tabletsGiven;
-      employee.quantity = quantity;
+      employee.issue = issue || employee.issue;
+      employee.tabletsGiven = tabletsGiven || employee.tabletsGiven;
+      employee.quantity = quantity || employee.quantity;
+      employee.operatorId = req.operator.operatorId;
     }
     await employee.save();
 
-    if (tabletsGiven && Number(quantity) > 0) {
-      await new Medicine({ employeeId: employee._id, issue, tabletsGiven, quantity, issuedDate: new Date() }).save();
+    // Since it's an illness visit, save the Medicine/Visit record
+    if (issue) {
+      await new Medicine({ employeeId: employee._id, issue, tabletsGiven, quantity, temperature, firstAid, operatorId: req.operator.operatorId, issuedDate: new Date() }).save();
     }
 
     if (addReport) {
@@ -315,7 +318,7 @@ app.post('/api/employees', authMiddleware, async (req, res) => {
       const count = await TestReport.countDocuments({ employeeId: employee._id });
       const reportNumber = `report_${count + 1}_${rDate.toISOString().split('T')[0]}`;
       const testReport = new TestReport({
-        employeeId: employee._id, reportNumber, reportDate: rDate,
+        employeeId: employee._id, reportNumber, reportDate: rDate, operatorId: req.operator.operatorId,
         htn: reportData.htn || '', dm: reportData.dm || '', rbs: reportData.rbs || '',
         serumCreatinine: reportData.serumCreatinine || '', serumUrea: reportData.serumUrea || '',
         serumCholinesterase: reportData.serumCholinesterase || '', serumCholesterol: reportData.serumCholesterol || '',
@@ -426,7 +429,7 @@ app.post('/api/reports', authMiddleware, async (req, res) => {
     const rDate = reportDate ? new Date(reportDate) : new Date();
     const count = await TestReport.countDocuments({ employeeId: employee._id });
     const reportNumber = `report_${count + 1}_${rDate.toISOString().split('T')[0]}`;
-    const testReport = new TestReport({ employeeId: employee._id, reportNumber, reportDate: rDate, ...reportData });
+    const testReport = new TestReport({ employeeId: employee._id, reportNumber, reportDate: rDate, operatorId: req.operator.operatorId, ...reportData });
     await testReport.save();
     await new AuditLog({ operatorId: req.operator.operatorId, action: `Added test report ${reportNumber} for employee ${employeeNumber}.` }).save();
     res.status(201).json({ success: true, report: testReport });
@@ -446,7 +449,7 @@ app.delete('/api/reports/:id', authMiddleware, async (req, res) => {
 // --- Save Hospital Suggestion ---
 app.post('/api/hospital-suggestions', authMiddleware, async (req, res) => {
   try {
-    const { employeeNumber, hospitalName, reason } = req.body;
+    const { employeeNumber, hospitalName, reason, arogyasri } = req.body;
     if (!employeeNumber || !hospitalName || !reason) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
@@ -456,7 +459,9 @@ app.post('/api/hospital-suggestions', authMiddleware, async (req, res) => {
     const suggestion = new HospitalSuggestion({
       employeeId: employee._id,
       hospitalName,
-      reason
+      reason,
+      arogyasri: arogyasri === true || arogyasri === 'true',
+      operatorId: req.operator.operatorId
     });
     await suggestion.save();
     res.json({ success: true, message: 'Suggestion saved successfully.' });
@@ -471,15 +476,27 @@ app.get('/api/hospital-suggestions/all', authMiddleware, async (req, res) => {
       .populate('employeeId', 'employeeNumber name designation workLocation age bp')
       .sort({ suggestedAt: -1 });
     res.json(suggestions);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// --- Get Open Hospital Suggestion ---
+app.get('/api/hospital-suggestions/open/:empNumber', authMiddleware, async (req, res) => {
+  try {
+    const employee = await Employee.findOne({ employeeNumber: req.params.empNumber });
+    if (!employee) return res.status(404).json({ error: 'Employee not found.' });
+    
+    // Find the most recent open case
+    const suggestion = await HospitalSuggestion.findOne({ employeeId: employee._id, status: 'Open' }).sort({ suggestedAt: -1 });
+    if (!suggestion) return res.json({ success: true, suggestion: null });
+    
+    res.json({ success: true, suggestion });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // --- File Upload ---
 app.post('/api/upload', authMiddleware, upload.single('file'), async (req, res) => {
   try {
-    const { employeeNumber, reportId, reportType, hospitalName } = req.body;
+    const { employeeNumber, reportId, reportType, hospitalName, suggestionId, amount, closeCase } = req.body;
     if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
     const employee = await Employee.findOne({ employeeNumber });
     if (!employee) return res.status(404).json({ error: 'Employee not found.' });
@@ -495,10 +512,20 @@ app.post('/api/upload', authMiddleware, upload.single('file'), async (req, res) 
       fileName: customFileName, 
       filePath: relativePath,
       reportType: reportType || 'General',
-      hospitalName: hospitalName || ''
+      hospitalName: hospitalName || '',
+      operatorId: req.operator.operatorId
     });
     
     await uploadedFile.save();
+    
+    // If it's a Hospital Report and we have a suggestion ID, update the suggestion
+    if (reportType === 'Hospital' && suggestionId) {
+      const updateData = {};
+      if (amount) updateData.amount = Number(amount);
+      if (closeCase === 'true' || closeCase === true) updateData.status = 'Closed';
+      await HospitalSuggestion.findByIdAndUpdate(suggestionId, updateData);
+    }
+    
     if (reportId) {
       await TestReport.findByIdAndUpdate(reportId, { $push: { uploadedFiles: relativePath } });
     }

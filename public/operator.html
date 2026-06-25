@@ -622,13 +622,24 @@
               </div>
 
               <div class="form-group-col col-6">
-                <label for="pat-tablets">Tablets Given *</label>
-                <input type="text" id="pat-tablets" class="input-ctrl" required placeholder="e.g. Ibuprofen 400mg">
+                <label for="pat-tablets">Tablets Given <span style="color:var(--text-muted);font-weight:400;">(Opt)</span></label>
+                <input type="text" id="pat-tablets" class="input-ctrl" placeholder="e.g. Ibuprofen 400mg">
               </div>
 
               <div class="form-group-col col-6">
-                <label for="pat-qty">Quantity *</label>
-                <input type="number" id="pat-qty" class="input-ctrl" required min="0" placeholder="e.g. 5">
+                <label for="pat-qty">Quantity <span style="color:var(--text-muted);font-weight:400;">(Opt)</span></label>
+                <input type="number" id="pat-qty" class="input-ctrl" min="0" placeholder="e.g. 5">
+              </div>
+
+              <!-- Added Temperature & First Aid -->
+              <div class="form-group-col col-6">
+                <label for="pat-temp">Temperature <span style="color:var(--text-muted);font-weight:400;">(Opt)</span></label>
+                <input type="text" id="pat-temp" class="input-ctrl" placeholder="e.g. 98.6 F">
+              </div>
+
+              <div class="form-group-col col-6">
+                <label for="pat-firstaid">First Aid <span style="color:var(--text-muted);font-weight:400;">(Opt)</span></label>
+                <input type="text" id="pat-firstaid" class="input-ctrl" placeholder="e.g. Bandaged wound">
               </div>
 
               <!-- Vitals (Optional) -->
@@ -1322,7 +1333,7 @@
           </div>
           
           <div class="table-container" style="margin-top: 1rem;">
-            <table class="data-table">
+            <table class="data-table" id="issue-history-table">
               <thead>
                 <tr>
                   <th>Issued Date</th>
@@ -1333,10 +1344,24 @@
                   <th>Issue</th>
                   <th>Tablets Given</th>
                   <th>Qty</th>
+                  <th>Temp</th>
+                  <th>First Aid</th>
+                </tr>
+                <tr class="filter-row">
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
+                  <th><select class="input-ctrl" onchange="filterIssueHistoryTable()" id="ih-filter-designation"><option value="">All</option></select></th>
+                  <th><select class="input-ctrl" onchange="filterIssueHistoryTable()" id="ih-filter-location"><option value="">All</option></select></th>
+                  <th><select class="input-ctrl" onchange="filterIssueHistoryTable()" id="ih-filter-issue"><option value="">All</option></select></th>
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
+                  <th><input type="text" class="input-ctrl" onkeyup="filterIssueHistoryTable()" placeholder="Filter..."></th>
                 </tr>
               </thead>
               <tbody id="issue-history-body">
-                <tr><td colspan="8" style="text-align:center;">Loading...</td></tr>
+                <tr><td colspan="10" style="text-align:center;">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1400,6 +1425,10 @@
                 <label for="hs-emp-name">Employee Name</label>
                 <input type="text" id="hs-emp-name" class="input-ctrl" readonly placeholder="Auto-populated" style="background-color: var(--bg-body); cursor: not-allowed;">
               </div>
+              <div class="form-group" style="display:flex; align-items:center; gap:0.5rem; margin-top:2rem;">
+                <input type="checkbox" id="hs-arogyasri" style="width:1.2rem; height:1.2rem; cursor:pointer;">
+                <label for="hs-arogyasri" style="margin-bottom:0; cursor:pointer; font-weight:600; color:var(--text-main);">Arogyasri (If possible)</label>
+              </div>
               <div class="form-group">
                 <label for="hs-hospital-name">Hospital Name *</label>
                 <select id="hs-hospital-name" class="input-ctrl" required>
@@ -1461,9 +1490,18 @@
                 <label for="hr-file">Select PDF Report *</label>
                 <input type="file" id="hr-file" accept="application/pdf" class="input-ctrl" required>
               </div>
+              <div class="form-group">
+                <label for="hr-amount">Amount Spent</label>
+                <input type="number" id="hr-amount" class="input-ctrl" min="0" placeholder="e.g. 5000">
+              </div>
             </div>
-            <div class="form-actions" style="margin-top:1.5rem;">
-              <button type="submit" class="btn btn-primary" id="hr-submit-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Hospital Report</button>
+            <div style="margin-top:1.5rem; display:flex; align-items:center; gap:0.75rem; padding: 1rem; background: rgba(var(--primary-rgb), 0.05); border-radius: 8px;">
+              <input type="checkbox" id="hr-close-case" style="width:1.5rem; height:1.5rem; cursor:pointer;">
+              <label for="hr-close-case" style="margin-bottom:0; cursor:pointer; font-weight:600; color:var(--text-main);">Close Case (Patient Discharged & Billing Finalized)</label>
+            </div>
+            <input type="hidden" id="hr-suggestion-id" value="">
+            <div class="form-actions" style="margin-top:1.5rem; display:flex; gap:1rem;">
+              <button type="submit" class="btn btn-primary" id="hr-submit-btn" style="flex:1;"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Hospital Report</button>
             </div>
           </form>
         </div>
@@ -1615,12 +1653,12 @@
               <h4>Restore Database</h4>
               <input type="file" id="restore-file-input" accept=".json" style="display: none;">
               <button class="btn btn-secondary" id="btn-trigger-restore" style="border-color: var(--warning); color: var(--warning); background: transparent;"><i class="fa-solid fa-file-import"></i> Upload & Restore JSON</button>
-            </div>
-          </div>
         </div>
 
       </div>
-
+      <div style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 2rem; margin-bottom: 1rem;">
+        designed by Gundra Kedara Karthikeya
+      </div>
     </main>
   </div>
 
@@ -1660,12 +1698,18 @@
                 <th>Date suggested</th>
                 <th>Hospital Name</th>
                 <th>Reason</th>
+                <th>Arogyasri</th>
+                <th>Amount</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody id="profile-suggestions-history">
               <!-- Dynamically populated -->
             </tbody>
           </table>
+        </div>
+        <div style="text-align: right; margin-bottom: 1.5rem; font-weight: bold; font-size: 1.1rem; color: var(--primary);">
+          Total Amount Spent: <span id="profile-total-amount">0</span>
         </div>
 
         <!-- Reports History List -->

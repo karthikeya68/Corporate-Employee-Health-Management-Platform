@@ -24,7 +24,8 @@ const EmployeeSchema = new mongoose.Schema({
   sugar: { type: String, default: '' },
   issue: { type: String, default: '' },
   tabletsGiven: { type: String, default: '' },
-  quantity: { type: Number, default: 0 }
+  quantity: { type: Number, default: 0 },
+  operatorId: { type: String, default: '' }
 }, {
   timestamps: true
 });
@@ -106,6 +107,7 @@ const TestReportSchema = new mongoose.Schema({
   leftEye: { type: String, default: '' },
 
   uploadedFiles: [{ type: String }],
+  operatorId: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -113,8 +115,11 @@ const TestReportSchema = new mongoose.Schema({
 const MedicineSchema = new mongoose.Schema({
   employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true, index: true },
   issue: { type: String, required: true },
-  tabletsGiven: { type: String, required: true },
-  quantity: { type: Number, required: true },
+  tabletsGiven: { type: String, required: false },
+  quantity: { type: Number, required: false },
+  temperature: { type: String, required: false },
+  firstAid: { type: String, required: false },
+  operatorId: { type: String, default: '' },
   issuedDate: { type: Date, default: Date.now }
 });
 
@@ -126,6 +131,7 @@ const UploadedFileSchema = new mongoose.Schema({
   filePath: { type: String, required: true },
   reportType: { type: String, enum: ['General', 'Yearly', 'Hospital'], default: 'General' },
   hospitalName: { type: String, default: '' },
+  operatorId: { type: String, default: '' },
   uploadedAt: { type: Date, default: Date.now }
 });
 
@@ -141,6 +147,10 @@ const HospitalSuggestionSchema = new mongoose.Schema({
   employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true, index: true },
   hospitalName: { type: String, required: true },
   reason: { type: String, required: true },
+  amount: { type: Number, default: 0 },
+  status: { type: String, enum: ['Open', 'Closed'], default: 'Open' },
+  arogyasri: { type: Boolean, default: false },
+  operatorId: { type: String, default: '' },
   suggestedAt: { type: Date, default: Date.now }
 });
 
