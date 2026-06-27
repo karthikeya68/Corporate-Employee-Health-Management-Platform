@@ -148,7 +148,7 @@
             <div class="card-header-flex">
               <span class="card-title"><i class="fa-solid fa-chart-line" style="color: var(--primary);"></i> Monthly Checkups Trend</span>
             </div>
-            <div style="position: relative; height: 250px;">
+            <div style="position: relative; height: 350px;">
               <canvas id="chart-checkups"></canvas>
             </div>
           </div>
@@ -157,8 +157,10 @@
             <div class="card-header-flex">
               <span class="card-title"><i class="fa-solid fa-heart-crack" style="color: var(--danger);"></i> Common Health Issues</span>
             </div>
-            <div style="position: relative; height: 250px;">
-              <canvas id="chart-complaints"></canvas>
+            <div style="position: relative; height: 350px; overflow-y: auto; overflow-x: hidden;">
+              <div style="height: 800px; position: relative;">
+                <canvas id="chart-complaints"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -618,12 +620,108 @@
 
               <div class="form-group-col col-12">
                 <label for="pat-issue">Issue / Complaint *</label>
-                <input type="text" id="pat-issue" class="input-ctrl" required placeholder="e.g. Headache, fever, cough">
+                <input type="text" id="pat-issue" list="issue-suggestions" class="input-ctrl" required placeholder="e.g. Headache, fever, cough">
+                <datalist id="issue-suggestions">
+                  <option value="Abdomen Pain">
+                  <option value="Acidity">
+                  <option value="Back Pain">
+                  <option value="Body Pains">
+                  <option value="Cold">
+                  <option value="Cough">
+                  <option value="Dog Bite">
+                  <option value="Eye Irritation">
+                  <option value="Fever">
+                  <option value="Finger Pain">
+                  <option value="Foot Pain">
+                  <option value="Hand Finger Pain">
+                  <option value="Headache">
+                  <option value="Joint Pains">
+                  <option value="Knee Pain">
+                  <option value="Left Foot Finger Pain">
+                  <option value="Left Shoulder Pain">
+                  <option value="Leg Pain">
+                  <option value="Motions">
+                  <option value="Neck Pain">
+                  <option value="Pain">
+                  <option value="Right Hand Pain">
+                  <option value="Right Knee Pain">
+                  <option value="Right Leg Pain">
+                  <option value="Right Shoulder Pain">
+                  <option value="Shoulder Pain">
+                  <option value="Skin Irritation">
+                  <option value="Tooth Pain">
+                  <option value="Vomiting">
+                  <option value="Weakness">
+                  <option value="Wound Pain">
+                  <option value="Wrist Pain">
+                </datalist>
               </div>
-
               <div class="form-group-col col-6">
                 <label for="pat-tablets">Tablets Given <span style="color:var(--text-muted);font-weight:400;">(Opt)</span></label>
-                <input type="text" id="pat-tablets" class="input-ctrl" placeholder="e.g. Ibuprofen 400mg">
+                <input type="text" id="pat-tablets" list="tablet-suggestions" class="input-ctrl" placeholder="e.g. Ibuprofen 400mg">
+                <datalist id="tablet-suggestions">
+                  <option value="Bottle:Amruthanjan">
+                  <option value="Bottle:Betadine">
+                  <option value="Bottle:Vicks">
+                  <option value="Cap:Pantop Dsr">
+                  <option value="DNS (IV fluids)">
+                  <option value="Drops: Lacryl (Eye)">
+                  <option value="Drops:Ceflox (Eye&Ear)">
+                  <option value="In:Anti Snake venom">
+                  <option value="Inj: Deriphyline">
+                  <option value="Inj: Sodium Cyanide Anti Dote Kit">
+                  <option value="Inj: Trenaxa">
+                  <option value="Inj: TT">
+                  <option value="Inj:Atropin">
+                  <option value="Inj:Avil">
+                  <option value="Inj:Cort-s">
+                  <option value="Inj:Dexona">
+                  <option value="Inj:Jonac">
+                  <option value="Inj:Ketorol">
+                  <option value="Inj:Mannital">
+                  <option value="Inj:Ondam">
+                  <option value="Inj:Pantop">
+                  <option value="NS(IV fluids)">
+                  <option value="Respules:Budecart">
+                  <option value="Respules:Duolin">
+                  <option value="RL (IV fluids)">
+                  <option value="Syp:Digene">
+                  <option value="Syp:Milk of magnesia">
+                  <option value="T:Acemiz Mr">
+                  <option value="T:Avil 25Mg">
+                  <option value="T:Beplex Forte">
+                  <option value="T:Buscogast">
+                  <option value="T:Cyclopam">
+                  <option value="T:Deriphyline">
+                  <option value="T:Dexona">
+                  <option value="T:Digene">
+                  <option value="T:Dolo500Mg">
+                  <option value="T:Dolo650Mg">
+                  <option value="T:Dulcolex">
+                  <option value="T:Meftal Spas">
+                  <option value="T:Metrogyl 400Mg">
+                  <option value="T:Montina Lc">
+                  <option value="T:Nicardia Retard 10Mg">
+                  <option value="T:Oflox Oz">
+                  <option value="T:Okaset">
+                  <option value="T:Ondam 4Mg">
+                  <option value="T:Pantop40Mg">
+                  <option value="T:Riboflavin">
+                  <option value="T:Sestil AD">
+                  <option value="T:Sinarest">
+                  <option value="T:Sorbitrate 5Mg">
+                  <option value="T:Taxim O">
+                  <option value="T:Tus Q">
+                  <option value="T:Zerodol 100Mg">
+                  <option value="T:Zerodol Sp">
+                  <option value="Tab: Topcid 40Mg">
+                  <option value="Tab:Zerodol P">
+                  <option value="Tube:Betadine">
+                  <option value="Tube:Lox 2%">
+                  <option value="Tube:Silverex">
+                  <option value="Tube:Soframycin">
+                  <option value="Tube:Volini Gel">
+                </datalist>
               </div>
 
               <div class="form-group-col col-6">

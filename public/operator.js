@@ -288,27 +288,40 @@ async function loadDashboardCharts(queryString = '') {
       complaintsChartInstance.destroy();
     }
     const complaintsCtx = document.getElementById('chart-complaints').getContext('2d');
+    
+    const predefinedIssues = [
+      "Abdomen Pain", "Acidity", "Back Pain", "Body Pains", "Cold", "Cough", "Dog Bite", 
+      "Eye Irritation", "Fever", "Finger Pain", "Foot Pain", "Hand Finger Pain", "Headache", 
+      "Joint Pains", "Knee Pain", "Left Foot Finger Pain", "Left Shoulder Pain", "Leg Pain", 
+      "Motions", "Neck Pain", "Pain", "Right Hand Pain", "Right Knee Pain", "Right Leg Pain", 
+      "Right Shoulder Pain", "Shoulder Pain", "Skin Irritation", "Tooth Pain", "Vomiting", 
+      "Weakness", "Wound Pain", "Wrist Pain"
+    ];
+
+    const issueCounts = predefinedIssues.map(issue => {
+      const idx = analytics.complaints.labels.indexOf(issue);
+      return idx !== -1 ? analytics.complaints.data[idx] : 0;
+    });
+
     complaintsChartInstance = new Chart(complaintsCtx, {
-      type: 'doughnut',
+      type: 'bar',
       data: {
-        labels: analytics.complaints.labels.length > 0 ? analytics.complaints.labels : ['None'],
+        labels: predefinedIssues,
         datasets: [{
-          data: analytics.complaints.data.length > 0 ? analytics.complaints.data : [0],
-          backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'],
-          borderWidth: 2,
-          borderColor: '#ffffff',
-          hoverOffset: 6
+          label: 'Occurrences',
+          data: issueCounts,
+          backgroundColor: '#3b82f6',
+          borderRadius: 4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '65%',
-        plugins: {
-          legend: { 
-            position: 'right',
-            labels: { boxWidth: 12, padding: 15 }
-          }
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { stepSize: 1, color: '#e2e8f0' } },
+          y: { ticks: { autoSkip: false, font: { size: 11 }, color: '#e2e8f0' } }
         }
       }
     });

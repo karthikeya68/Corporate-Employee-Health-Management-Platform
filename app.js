@@ -240,7 +240,7 @@ app.get('/api/dashboard/analytics', authMiddleware, async (req, res) => {
     const complaints = await Medicine.aggregate([
       { $match: complaintsMatch },
       { $group: { _id: '$issue', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }, { $limit: 5 }
+      { $sort: { count: -1 } }
     ]);
 
     res.json({
