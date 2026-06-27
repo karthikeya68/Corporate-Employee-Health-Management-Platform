@@ -4,3 +4,5 @@ node_modules/
 
 mongodb_data/
 public/uploads/
+*.exe
+uploads/
