@@ -1939,7 +1939,7 @@ function exportIssueHistoryExcel() {
         'Temperature': issue.temperature || '',
         'First Aid': issue.firstAid || '',
         'Issued Date': new Date(issue.issuedDate).toLocaleString(),
-        'Entered By': issue.operatorId || 'Unknown'
+        'Entered By': issue.operatorName || issue.operatorId || 'Unknown'
       };
     });
     

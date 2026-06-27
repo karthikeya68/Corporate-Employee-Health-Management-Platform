@@ -266,7 +266,19 @@ app.get('/api/issues/history', authMiddleware, async (req, res) => {
     }
     const medicines = await Medicine.find(query)
       .populate('employeeId', 'employeeNumber name designation workLocation')
-      .sort({ issuedDate: -1 });
+      .sort({ issuedDate: -1 })
+      .lean();
+      
+    // Fetch corresponding operator names
+    const operatorIds = [...new Set(medicines.map(m => m.operatorId).filter(Boolean))];
+    const operators = await Operator.find({ operatorId: { $in: operatorIds } }).select('operatorId name').lean();
+    const operatorMap = {};
+    operators.forEach(op => { operatorMap[op.operatorId] = op.name; });
+    
+    medicines.forEach(m => {
+      m.operatorName = operatorMap[m.operatorId] || m.operatorId;
+    });
+
     res.json(medicines);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
