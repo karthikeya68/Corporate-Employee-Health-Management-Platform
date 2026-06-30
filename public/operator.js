@@ -1082,36 +1082,43 @@ async function deleteReport(reportId, empNum) {
 
 // --- Settings & Imports ---
 function setupSettingsHandlers() {
-  const dropZone = document.getElementById('import-drop-zone');
-  const fileInput = document.getElementById('import-file-input');
+  const dropZoneEmp = document.getElementById('import-drop-zone-employees');
+  const fileInputEmp = document.getElementById('import-file-input-employees');
+  const dropZonePat = document.getElementById('import-drop-zone-patients');
+  const fileInputPat = document.getElementById('import-file-input-patients');
 
-  dropZone.addEventListener('click', () => fileInput.click());
+  const setupDropZone = (dropZone, fileInput) => {
+    dropZone.addEventListener('click', () => fileInput.click());
 
-  dropZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropZone.style.borderColor = 'var(--primary)';
-    dropZone.style.background = 'rgba(2, 132, 199, 0.05)';
-  });
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--primary)';
+      dropZone.style.background = 'rgba(2, 132, 199, 0.05)';
+    });
 
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.style.borderColor = 'var(--border-input)';
-    dropZone.style.background = 'rgba(2, 132, 199, 0.01)';
-  });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--border-input)';
+      dropZone.style.background = 'rgba(2, 132, 199, 0.01)';
+    });
 
-  dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.style.borderColor = 'var(--border-input)';
-    dropZone.style.background = 'rgba(2, 132, 199, 0.01)';
-    if (e.dataTransfer.files.length > 0) {
-      processImportFile(e.dataTransfer.files[0]);
-    }
-  });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--border-input)';
+      dropZone.style.background = 'rgba(2, 132, 199, 0.01)';
+      if (e.dataTransfer.files.length > 0) {
+        processImportFile(e.dataTransfer.files[0]);
+      }
+    });
 
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      processImportFile(e.target.files[0]);
-    }
-  });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        processImportFile(e.target.files[0]);
+      }
+    });
+  };
+
+  setupDropZone(dropZoneEmp, fileInputEmp);
+  setupDropZone(dropZonePat, fileInputPat);
 
   // Backup Trigger
   document.getElementById('btn-download-backup').addEventListener('click', async () => {

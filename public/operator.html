@@ -1677,27 +1677,39 @@
       <!-- View 5: Settings -->
       <div id="view-settings" class="content-body view-section" style="display: none;">
         
-        <!-- Bulk Import Card -->
-        <div class="glass-card">
-          <div class="card-header-flex">
-            <span class="card-title"><i class="fa-solid fa-file-excel" style="color: var(--accent);"></i> Bulk Import Patient Data (Excel / CSV)</span>
-          </div>
-          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Upload an Excel (.xlsx, .xls) or CSV file containing employee profiles or historical patient visits. 
-            <br><br>
-            <strong>Features:</strong><br>
-            • To log past visits/issues, include a column named <code>Issued Date</code> or <code>Date</code> (e.g. <code>2023-11-20</code>). If omitted, today's date is used.<br>
-            • You can upload multiple rows for the same Employee ID to import their entire history of visits.<br>
-            • Any test report parameters (HTN, DM, etc.) will automatically generate a historical test report.
-          </p>
-
-          <div class="file-upload-zone" id="import-drop-zone">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            <p>Drag and drop your Excel/CSV file here, or <strong>browse files</strong></p>
-            <span>Supports .xlsx, .xls, and .csv formats</span>
-            <input type="file" id="import-file-input" accept=".xlsx, .xls, .csv" style="display: none;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- Bulk Import Employees Card -->
+          <div class="glass-card">
+            <div class="card-header-flex">
+              <span class="card-title"><i class="fa-solid fa-users" style="color: var(--primary);"></i> Bulk Import Employee Master Data</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+              Upload an Excel/CSV file to create or update employee profiles. Columns should include Name, Emp No, Age, Designation, etc.
+            </p>
+            <div class="file-upload-zone" id="import-drop-zone-employees">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Drag and drop Employee data here, or <strong>browse files</strong></p>
+              <span>Supports .xlsx, .xls, and .csv formats</span>
+              <input type="file" id="import-file-input-employees" accept=".xlsx, .xls, .csv" style="display: none;">
+            </div>
           </div>
 
+          <!-- Bulk Import Patient Data Card -->
+          <div class="glass-card">
+            <div class="card-header-flex">
+              <span class="card-title"><i class="fa-solid fa-file-medical" style="color: var(--accent);"></i> Bulk Import Patient Visits (Historical)</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+              Upload an Excel/CSV file containing past patient visits. Include an <code>Issued Date</code> column to log historical dates.
+            </p>
+            <div class="file-upload-zone" id="import-drop-zone-patients">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Drag and drop Patient history here, or <strong>browse files</strong></p>
+              <span>Supports .xlsx, .xls, and .csv formats</span>
+              <input type="file" id="import-file-input-patients" accept=".xlsx, .xls, .csv" style="display: none;">
+            </div>
+          </div>
+        </div>
           <!-- Progress Bar Section -->
           <div id="import-progress-container" style="display: none; margin-top: 1.5rem; background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 500;">
