@@ -561,8 +561,19 @@ app.post('/api/import', authMiddleware, async (req, res) => {
       const name = row['Full Name'] || row.Name || row['Employee Name'];
       const employeeNumber = row['Employee ID / Number'] || row['Employee ID'] || row['Emp No'] || row['Employee Number'] || row.employeeNumber;
       if (!employeeNumber) { errors.push(`Row ${index + 1}: Missing Employee ID/Number.`); skippedCount++; continue; }
-      if (batchEmpIds.has(employeeNumber)) { errors.push(`Row ${index + 1}: Duplicate Employee Number "${employeeNumber}" in batch.`); skippedCount++; continue; }
-      batchEmpIds.add(employeeNumber);
+
+      // Parse Historical Date
+      let recordDate = new Date();
+      const rawDate = row['Issued Date'] || row['Visit Date'] || row.Date || row.date;
+      if (rawDate) {
+        const parsed = new Date(rawDate);
+        if (!isNaN(parsed.getTime())) {
+          recordDate = parsed;
+        } else if (typeof rawDate === 'number') {
+          // Handle Excel serial date format
+          recordDate = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+        }
+      }
 
       const designation = row.Designation || 'General Staff';
       const workLocation = row['Work Location / Area'] || row['Work Location'] || row['Working Area'] || 'Industrial Site';
@@ -583,22 +594,36 @@ app.post('/api/import', authMiddleware, async (req, res) => {
           employee = new Employee({ name, employeeNumber, designation, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
           isNew = true;
         } else {
+          // Only update basic details if it's the latest info (we'll just overwrite for simplicity on import)
           Object.assign(employee, { name: name || employee.name, designation, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
         }
         await employee.save();
-        if (isNew) createdCount++; else updatedCount++;
-
-        if (tabletsGiven && quantity > 0) {
-          await new Medicine({ employeeId: employee._id, issue, tabletsGiven, quantity, issuedDate: new Date() }).save();
+        
+        // Ensure we only count employee creation/updates once per batch even if they have multiple rows
+        if (!batchEmpIds.has(employeeNumber)) {
+          batchEmpIds.add(employeeNumber);
+          if (isNew) createdCount++; else updatedCount++;
         }
 
+        // Save historical health issue/medicine visit
+        if (issue || (tabletsGiven && quantity > 0)) {
+          await new Medicine({ 
+            employeeId: employee._id, 
+            issue: issue || 'General Visit', 
+            tabletsGiven, 
+            quantity, 
+            issuedDate: recordDate,
+            operatorId: req.operator.operatorId 
+          }).save();
+        }
+
+        // Save historical test report if parameters exist
         const hasReport = row.HTN !== undefined || row.DM !== undefined || row.Rbs !== undefined || row.RBS !== undefined;
         if (hasReport) {
-          const rDate = new Date();
           const count = await TestReport.countDocuments({ employeeId: employee._id });
-          const reportNumber = `report_${count + 1}_${rDate.toISOString().split('T')[0]}`;
+          const reportNumber = `report_${count + 1}_${recordDate.toISOString().split('T')[0]}`;
           await new TestReport({
-            employeeId: employee._id, reportNumber, reportDate: rDate,
+            employeeId: employee._id, reportNumber, reportDate: recordDate,
             htn: String(row.HTN || ''), dm: String(row.DM || ''), rbs: String(row.Rbs || row.RBS || ''),
             serumCreatinine: String(row['Seum creatinine'] || ''), serumUrea: String(row['serum urea'] || '')
           }).save();

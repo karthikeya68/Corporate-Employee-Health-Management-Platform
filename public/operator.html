@@ -1683,7 +1683,12 @@
             <span class="card-title"><i class="fa-solid fa-file-excel" style="color: var(--accent);"></i> Bulk Import Employees (Excel / CSV)</span>
           </div>
           <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            Upload an Excel (.xlsx, .xls) or CSV file. The columns in the file should match employee attributes (Name, Emp No, Age, Designation, etc.). If report parameters are present, test reports will be generated automatically.
+            Upload an Excel (.xlsx, .xls) or CSV file containing employee profiles or historical patient visits. 
+            <br><br>
+            <strong>Features:</strong><br>
+            • To log past visits/issues, include a column named <code>Issued Date</code> or <code>Date</code> (e.g. <code>2023-11-20</code>). If omitted, today's date is used.<br>
+            • You can upload multiple rows for the same Employee ID to import their entire history of visits.<br>
+            • Any test report parameters (HTN, DM, etc.) will automatically generate a historical test report.
           </p>
 
           <div class="file-upload-zone" id="import-drop-zone">
