@@ -1,4 +1,9 @@
 const express = require('express');
+const crypto = require('crypto');
+global.crypto = crypto;
+if (!globalThis.crypto) {
+  globalThis.crypto = crypto.webcrypto;
+}
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
