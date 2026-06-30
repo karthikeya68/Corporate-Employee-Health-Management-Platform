@@ -10,7 +10,7 @@ const { Operator, Employee, TestReport, Medicine, UploadedFile, AuditLog, Hospit
 
 const PORT_REG = 1290;
 const PORT_APP = 9012;
-const MONGO_URI = 'mongodb://localhost:27017/caretaker';
+const MONGO_URI = 'mongodb://127.0.0.1:27017/caretaker';
 const JWT_SECRET = 'ohc-management-secret-key-2026';
 
 // ==========================================
