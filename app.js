@@ -570,7 +570,7 @@ app.post('/api/import', authMiddleware, async (req, res) => {
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
-      const name = row['Full Name'] || row.Name || row['Employee Name'];
+      const name = row['Full Name'] || row.Name || row['Employee Name'] || 'Unknown';
       const employeeNumber = row['Employee ID / Number'] || row['Employee ID'] || row['Emp No'] || row['Employee Number'] || row.employeeNumber;
       if (!employeeNumber) { errors.push(`Row ${index + 1}: Missing Employee ID/Number.`); skippedCount++; continue; }
 
@@ -584,6 +584,12 @@ app.post('/api/import', authMiddleware, async (req, res) => {
         } else if (typeof rawDate === 'number') {
           // Handle Excel serial date format
           recordDate = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+        } else if (typeof rawDate === 'string' && rawDate.match(/^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}$/)) {
+          const parts = rawDate.split(/[-/]/);
+          let year = parseInt(parts[2]);
+          if (year < 100) year += 2000;
+          const pd = new Date(year, parseInt(parts[1]) - 1, parseInt(parts[0]));
+          if (!isNaN(pd.getTime())) recordDate = pd;
         }
       }
 
