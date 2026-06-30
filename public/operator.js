@@ -502,7 +502,46 @@ function setupFormHandlers() {
     });
   }
 
-  // Submit patient illness form
+// --- Patient Form Handlers ---
+function setupPatientFormHandlers() {
+  document.getElementById('btn-download-all-employees')?.addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/employees/all', {
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch employee data');
+      const employees = await res.json();
+      
+      if(employees.length === 0) {
+        showToast('No employee records found in database.', 'info');
+        return;
+      }
+
+      const sheetData = employees.map(emp => ({
+        "Emp No": emp.employeeNumber || '',
+        "Name": emp.name || '',
+        "Designation": emp.designation || '',
+        "Work Location": emp.workLocation || '',
+        "Age": emp.age || '',
+        "Height": emp.height || '',
+        "Weight": emp.weight || '',
+        "Pulse": emp.pulse || '',
+        "BP": emp.bp || '',
+        "Last Recorded Issue": emp.issue || '',
+        "Last Tablets Given": emp.tabletsGiven || '',
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(sheetData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Master Employees");
+      XLSX.writeFile(wb, `CareTaker_Employee_Data_${new Date().toISOString().split('T')[0]}.xlsx`);
+      showToast('Employee Data downloaded successfully!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to download employee data.', 'error');
+    }
+  });
+
   const patientForm = document.getElementById('patient-illness-form');
   patientForm.addEventListener('submit', async (e) => {
     e.preventDefault();

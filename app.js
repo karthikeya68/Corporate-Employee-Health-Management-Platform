@@ -284,6 +284,13 @@ app.get('/api/issues/history', authMiddleware, async (req, res) => {
 });
 
 // --- Save / Update Employee ---
+app.get('/api/employees/all', authMiddleware, async (req, res) => {
+  try {
+    const employees = await Employee.find().sort({ name: 1 });
+    res.json(employees);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.post('/api/employees', authMiddleware, async (req, res) => {
   try {
     const {
