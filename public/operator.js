@@ -653,6 +653,9 @@ function setupFormHandlers() {
             document.getElementById('pat-name').value = emp.name || '';
             document.getElementById('pat-location').value = emp.workLocation || '';
             document.getElementById('pat-designation').value = emp.designation || '';
+            if (document.getElementById('pat-department')) document.getElementById('pat-department').value = emp.department || '';
+            if (document.getElementById('pat-category')) document.getElementById('pat-category').value = emp.category || '';
+            if (document.getElementById('pat-dob')) document.getElementById('pat-dob').value = emp.dob || '';
             document.getElementById('pat-age').value = emp.age || '';
             if (patAutofillStatus) patAutofillStatus.textContent = '✅ Auto-filled';
             showToast(`Pre-filled details for ${emp.name} (${empNum})`, 'info');
