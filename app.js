@@ -594,8 +594,15 @@ app.post('/api/import', authMiddleware, async (req, res) => {
       }
 
       const designation = row.Designation || 'General Staff';
+      const department = row.Department || '';
+      const category = row.Category || '';
+      const dob = row['Date of Birth'] || '';
+      const doj = row['Date of Joining'] || '';
+      const village = row.Village || '';
+      const presentAddress = row['Present Address'] || '';
       const workLocation = row['Work Location / Area'] || row['Work Location'] || row['Working Area'] || 'Industrial Site';
-      const age = Number(row.Age) || 30;
+      const ageStr = String(row.Age || '30').replace(/\D/g, '');
+      const age = Number(ageStr) || 30;
       const height = Number(row['Height (cm)'] || row.Height) || 165;
       const weight = Number(row['Weight (kg)'] || row.weight || row.Weight) || 60;
       const pulse = Number(row['Pulse (bpm)'] || row.Pulse || row.pulse) || 72;
@@ -609,11 +616,11 @@ app.post('/api/import', authMiddleware, async (req, res) => {
 
       try {
         if (!employee) {
-          employee = new Employee({ name, employeeNumber, designation, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
+          employee = new Employee({ name, employeeNumber, designation, department, category, dob, doj, village, presentAddress, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
           isNew = true;
         } else {
           // Only update basic details if it's the latest info (we'll just overwrite for simplicity on import)
-          Object.assign(employee, { name: name || employee.name, designation, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
+          Object.assign(employee, { name: name !== 'Unknown' ? name : employee.name, designation, department, category, dob, doj, village, presentAddress, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
         }
         await employee.save();
         

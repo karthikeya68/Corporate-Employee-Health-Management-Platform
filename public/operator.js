@@ -889,6 +889,12 @@ async function showEmployeeProfile(empNum) {
     document.getElementById('prof-name').textContent = emp.name;
     document.getElementById('prof-number').textContent = emp.employeeNumber;
     document.getElementById('prof-designation').textContent = emp.designation;
+    document.getElementById('prof-department').textContent = emp.department || '-';
+    document.getElementById('prof-category').textContent = emp.category || '-';
+    document.getElementById('prof-dob').textContent = emp.dob || '-';
+    document.getElementById('prof-doj').textContent = emp.doj || '-';
+    document.getElementById('prof-village').textContent = emp.village || '-';
+    document.getElementById('prof-address').textContent = emp.presentAddress || '-';
     document.getElementById('prof-location').textContent = emp.workLocation;
     document.getElementById('prof-age').textContent = emp.age;
     document.getElementById('prof-height').textContent = emp.height;
