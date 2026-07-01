@@ -510,13 +510,19 @@ function setupFormHandlers() {
     const name = document.getElementById('pat-name').value.trim();
     const employeeNumber = document.getElementById('pat-number').value.trim().toUpperCase();
     const designation = document.getElementById('pat-designation').value.trim();
+    const department = document.getElementById('pat-department') ? document.getElementById('pat-department').value.trim() : '';
+    const category = document.getElementById('pat-category') ? document.getElementById('pat-category').value.trim() : '';
+    const dob = document.getElementById('pat-dob') ? document.getElementById('pat-dob').value.trim() : '';
+    const employmentType = document.getElementById('pat-employment-type') ? document.getElementById('pat-employment-type').value : '';
+    const visitCategory = document.getElementById('pat-visit-category') ? document.getElementById('pat-visit-category').value : '';
+    
     const workLocation = document.getElementById('pat-location').value.trim();
     const age = Number(document.getElementById('pat-age').value);
     const issue = document.getElementById('pat-issue').value.trim();
     const tabletsGiven = document.getElementById('pat-tablets').value.trim();
     const quantity = Number(document.getElementById('pat-qty').value || 0);
     const temperature = document.getElementById('pat-temp') ? document.getElementById('pat-temp').value.trim() : '';
-    const firstAid = document.getElementById('pat-firstaid') ? document.getElementById('pat-firstaid').value.trim() : '';
+    const firstAid = document.getElementById('pat-firstaid') ? document.getElementById('pat-firstaid').value : '';
     const attendedBy = document.getElementById('pat-attended-by').value.trim();
     const remark = document.getElementById('pat-remark').value.trim();
     
@@ -532,13 +538,13 @@ function setupFormHandlers() {
     }
 
     const payload = {
-      name, employeeNumber, designation, workLocation, age,
+      name, employeeNumber, designation, department, employmentType, category, dob, workLocation, age,
       height: 0, weight: 0, 
       pulse: pulseVal ? Number(pulseVal) : 0, 
       bp: bpVal || 'N/A',
       sugar: sugarVal,
       issue, tabletsGiven, quantity,
-      temperature, firstAid,
+      temperature, firstAid, visitCategory,
       attendedBy, remark,
       visitDateTime: new Date().toISOString()
     };

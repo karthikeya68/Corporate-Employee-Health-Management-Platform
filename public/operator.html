@@ -601,37 +601,55 @@
               <!-- Auto-filled fields -->
               <div class="form-group-col col-6">
                 <label for="pat-name">Full Name *</label>
-                <input type="text" id="pat-name" class="input-ctrl" required placeholder="Auto-filled from Employee ID">
+                <input type="text" id="pat-name" class="input-ctrl" required placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
               </div>
 
               <div class="form-group-col col-6">
                 <label for="pat-designation">Designation *</label>
-                <input type="text" id="pat-designation" class="input-ctrl" required placeholder="Auto-filled from Employee ID">
+                <input type="text" id="pat-designation" class="input-ctrl" required placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
               </div>
 
               <div class="form-group-col col-6">
                 <label for="pat-department">Department</label>
-                <input type="text" id="pat-department" class="input-ctrl" placeholder="Auto-filled from Employee ID">
+                <input type="text" id="pat-department" class="input-ctrl" placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
               </div>
 
               <div class="form-group-col col-6">
                 <label for="pat-category">Category</label>
-                <input type="text" id="pat-category" class="input-ctrl" placeholder="Auto-filled from Employee ID">
+                <input type="text" id="pat-category" class="input-ctrl" placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
               </div>
 
               <div class="form-group-col col-6">
                 <label for="pat-dob">Date of Birth</label>
-                <input type="text" id="pat-dob" class="input-ctrl" placeholder="Auto-filled from Employee ID">
+                <input type="text" id="pat-dob" class="input-ctrl" placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
               </div>
 
               <div class="form-group-col col-6">
                 <label for="pat-location">Working Area *</label>
-                <input type="text" id="pat-location" class="input-ctrl" required placeholder="Auto-filled from Employee ID">
+                <input type="text" id="pat-location" class="input-ctrl" required placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
               </div>
 
               <div class="form-group-col col-6">
                 <label for="pat-age">Age *</label>
-                <input type="number" id="pat-age" class="input-ctrl" required min="18" max="70" placeholder="Auto-filled from Employee ID">
+                <input type="number" id="pat-age" class="input-ctrl" required min="18" max="70" placeholder="Auto-filled from Employee ID" readonly style="background:var(--bg-secondary);cursor:not-allowed;">
+              </div>
+
+              <div class="form-group-col col-6">
+                <label for="pat-employment-type">Regular / Contract *</label>
+                <select id="pat-employment-type" class="input-ctrl" required>
+                  <option value="" disabled selected>Select Type</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+
+              <div class="form-group-col col-6">
+                <label for="pat-visit-category">Category (First Aid / General) *</label>
+                <select id="pat-visit-category" class="input-ctrl" required>
+                  <option value="" disabled selected>Select Category</option>
+                  <option value="First Aid">First Aid</option>
+                  <option value="General">General</option>
+                </select>
               </div>
 
               <div class="form-group-col col-12">
@@ -752,8 +770,12 @@
               </div>
 
               <div class="form-group-col col-6">
-                <label for="pat-firstaid">First Aid <span style="color:var(--text-muted);font-weight:400;">(Opt)</span></label>
-                <input type="text" id="pat-firstaid" class="input-ctrl" placeholder="e.g. Bandaged wound">
+                <label for="pat-firstaid">First Aid Action *</label>
+                <select id="pat-firstaid" class="input-ctrl" required>
+                  <option value="" disabled selected>Select Action</option>
+                  <option value="First Aid Done">First Aid Done</option>
+                  <option value="Referred to Hospital">Referred to Hospital</option>
+                </select>
               </div>
 
               <!-- Vitals (Optional) -->

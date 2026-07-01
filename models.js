@@ -16,6 +16,7 @@ const EmployeeSchema = new mongoose.Schema({
   name: { type: String, required: true, index: true },
   designation: { type: String, required: true },
   department: { type: String, default: '' },
+  employmentType: { type: String, default: 'Regular' }, // Regular / Contract
   category: { type: String, default: '' },
   dob: { type: String, default: '' },
   doj: { type: String, default: '' },
@@ -124,7 +125,8 @@ const MedicineSchema = new mongoose.Schema({
   tabletsGiven: { type: String, required: false },
   quantity: { type: Number, required: false },
   temperature: { type: String, required: false },
-  firstAid: { type: String, required: false },
+  visitCategory: { type: String, required: false }, // First Aid / General
+  firstAid: { type: String, required: false }, // First Aid Done / Referred to Hospital
   operatorId: { type: String, default: '' },
   issuedDate: { type: Date, default: Date.now }
 });

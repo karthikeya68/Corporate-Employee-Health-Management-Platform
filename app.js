@@ -299,9 +299,9 @@ app.get('/api/employees/all', authMiddleware, async (req, res) => {
 app.post('/api/employees', authMiddleware, async (req, res) => {
   try {
     const {
-      name, employeeNumber, designation, workLocation,
+      name, employeeNumber, designation, department, employmentType, category, dob, workLocation,
       age, height, weight, pulse, bp, sugar, issue, tabletsGiven, quantity,
-      temperature, firstAid,
+      temperature, firstAid, visitCategory,
       remark, attendedBy,
       addReport, reportDate, ...reportData
     } = req.body;
@@ -313,11 +313,15 @@ app.post('/api/employees', authMiddleware, async (req, res) => {
     let isNew = false;
 
     if (!employee) {
-      employee = new Employee({ name, employeeNumber, designation, workLocation, age, height, weight, pulse, bp, sugar, issue, tabletsGiven, quantity, operatorId: req.operator.operatorId });
+      employee = new Employee({ name, employeeNumber, designation, department, employmentType, category, dob, workLocation, age, height, weight, pulse, bp, sugar, issue, tabletsGiven, quantity, operatorId: req.operator.operatorId });
       isNew = true;
     } else {
       employee.name = name;
       employee.designation = designation;
+      if (department) employee.department = department;
+      if (employmentType) employee.employmentType = employmentType;
+      if (category) employee.category = category;
+      if (dob) employee.dob = dob;
       employee.workLocation = workLocation;
       employee.age = age;
       employee.height = height || employee.height;
@@ -333,8 +337,8 @@ app.post('/api/employees', authMiddleware, async (req, res) => {
     await employee.save();
 
     // Since it's an illness visit, save the Medicine/Visit record
-    if (issue) {
-      await new Medicine({ employeeId: employee._id, issue, tabletsGiven, quantity, temperature, firstAid, operatorId: req.operator.operatorId, issuedDate: new Date() }).save();
+    if (issue || visitCategory) {
+      await new Medicine({ employeeId: employee._id, issue: issue || 'General Visit', tabletsGiven, quantity, temperature, firstAid, visitCategory, operatorId: req.operator.operatorId, issuedDate: new Date() }).save();
     }
 
     if (addReport) {
@@ -595,32 +599,36 @@ app.post('/api/import', authMiddleware, async (req, res) => {
 
       const designation = row.Designation || 'General Staff';
       const department = row.Department || '';
+      const employmentType = row['Regular / Contract'] || 'Regular';
       const category = row.Category || '';
       const dob = row['Date of Birth'] || '';
       const doj = row['Date of Joining'] || '';
       const village = row.Village || '';
       const presentAddress = row['Present Address'] || '';
-      const workLocation = row['Work Location / Area'] || row['Work Location'] || row['Working Area'] || 'Industrial Site';
+      const workLocation = row['Work Location / Area'] || row['Work Location'] || row['Working Area'] || row.Worklocation || 'Industrial Site';
       const ageStr = String(row.Age || '30').replace(/\D/g, '');
       const age = Number(ageStr) || 30;
       const height = Number(row['Height (cm)'] || row.Height) || 165;
       const weight = Number(row['Weight (kg)'] || row.weight || row.Weight) || 60;
       const pulse = Number(row['Pulse (bpm)'] || row.Pulse || row.pulse) || 72;
       const bp = row['Blood Pressure (BP)'] || row.Bp || row.bp || '120/80';
-      const issue = row['Issue / Complaint'] || row.issue || '';
-      const tabletsGiven = row['Tablets Given'] || row.tabletsGiven || '';
+      const issue = row['Issue / Complaint'] || row.complaint || row.issue || '';
+      const tabletsGiven = row['Treatment Given'] || row['Tablets Given'] || row.tabletsGiven || '';
       const quantity = Number(row.Quantity || row.quantity) || 0;
+      
+      const visitCategory = row['Category (First Aid / General)'] || '';
+      const firstAid = row['First Aid Done / Referred to Hospital'] || '';
 
       let employee = await Employee.findOne({ employeeNumber });
       let isNew = false;
 
       try {
         if (!employee) {
-          employee = new Employee({ name, employeeNumber, designation, department, category, dob, doj, village, presentAddress, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
+          employee = new Employee({ name, employeeNumber, designation, department, employmentType, category, dob, doj, village, presentAddress, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
           isNew = true;
         } else {
           // Only update basic details if it's the latest info (we'll just overwrite for simplicity on import)
-          Object.assign(employee, { name: name !== 'Unknown' ? name : employee.name, designation, department, category, dob, doj, village, presentAddress, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
+          Object.assign(employee, { name: name !== 'Unknown' ? name : employee.name, designation, department, employmentType, category, dob, doj, village, presentAddress, workLocation, age, height, weight, pulse, bp, issue, tabletsGiven, quantity });
         }
         await employee.save();
         
@@ -631,12 +639,14 @@ app.post('/api/import', authMiddleware, async (req, res) => {
         }
 
         // Save historical health issue/medicine visit
-        if (issue || (tabletsGiven && quantity > 0)) {
+        if (issue || (tabletsGiven && quantity > 0) || visitCategory || firstAid) {
           await new Medicine({ 
             employeeId: employee._id, 
             issue: issue || 'General Visit', 
             tabletsGiven, 
             quantity, 
+            visitCategory,
+            firstAid,
             issuedDate: recordDate,
             operatorId: req.operator.operatorId 
           }).save();
