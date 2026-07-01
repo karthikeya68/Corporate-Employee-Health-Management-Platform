@@ -570,7 +570,7 @@ app.post('/api/import', authMiddleware, async (req, res) => {
 
     for (let index = 0; index < rows.length; index++) {
       const row = rows[index];
-      const name = row['Full Name'] || row.Name || row['Employee Name'] || 'Unknown';
+      const name = row['Name of the Employee'] || row['Full Name'] || row.Name || row['Employee Name'] || 'Unknown';
       const employeeNumber = row['Employee ID / Number'] || row['Employee ID'] || row['Emp No'] || row['Employee Number'] || row.employeeNumber;
       if (!employeeNumber) { errors.push(`Row ${index + 1}: Missing Employee ID/Number.`); skippedCount++; continue; }
 
